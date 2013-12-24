@@ -3,7 +3,7 @@
  */
 
 /**
- * @author Tigra
+ * @author a.dobrynin
  *
  */
 public class CollisionEvent implements Comparable<CollisionEvent> {
@@ -26,9 +26,8 @@ public class CollisionEvent implements Comparable<CollisionEvent> {
 	}
 	
 	public boolean isValid() {
-		boolean res = true;
-		if (p1 != null) res &= (count1 == p1.getCollisionsCount());
-		if (p2 != null) res &= (count2 == p2.getCollisionsCount());
-		return res;
+		if ((p1 != null) && (count1 != p1.getCollisionsCount())) return false;
+		if ((p2 != null) && (count2 != p2.getCollisionsCount())) return false;
+		return true;
 	}
 }

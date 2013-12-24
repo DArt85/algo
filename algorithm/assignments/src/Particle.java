@@ -58,9 +58,6 @@ public class Particle {
 	 */
 	
 	public void move(double dt) {
-		// check for collision with walls
-		/*if ((rX + vX*dt < radius) || (rX + vX*dt > 1 - radius)) vX = -vX;
-		if ((rY + vY*dt < radius) || (rY + vY*dt > 1 - radius)) vY = -vY;*/
 		rX += vX*dt;
 		rY += vY*dt;
 	}
@@ -87,10 +84,12 @@ public class Particle {
 	
 	public void bounceOffVWall() {
 		vX = -vX;
+		cCount++;
 	}
 	
 	public void bounceOffHWall() {
 		vY = - vY;
+		cCount++;
 	}
 	
 	/*
@@ -114,11 +113,13 @@ public class Particle {
 	
 	public double timeToHitVWall() {
 		if (vX > 0) return (1 - rX - radius) / vX;
-		else return (rX - radius) / -vX;
+		else if (vX < 0) return (radius - rX) / vX;
+		else return Double.POSITIVE_INFINITY;
 	}
 	
 	public double timeToHitHWall() {
 		if (vY > 0) return (1 - rY - radius) / vY;
-		else return (rY - radius) / -vY;
+		else if (vY < 0) return (radius - rY) / vY;
+		else return Double.POSITIVE_INFINITY;
 	}
 }

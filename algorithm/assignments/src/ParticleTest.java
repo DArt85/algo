@@ -29,7 +29,7 @@ public class ParticleTest {
 		// initialize particles
 		pgen.setGeneratingFunction(ParticleGenerator.Cfg.Mass, genFuncFactory(stat, new double[]{0, 1}));
 		pgen.setGeneratingFunction(ParticleGenerator.Cfg.Radius, genFuncFactory(stat, new double[]{0.005, 0.01}));
-		pgen.setGeneratingFunction(ParticleGenerator.Cfg.Speed, genFuncFactory(stat, new double[]{0, 0.5}));
+		pgen.setGeneratingFunction(ParticleGenerator.Cfg.Speed, genFuncFactory(stat, new double[]{-0.5, 0.5}));
 		pgen.setGeneratingFunction(ParticleGenerator.Cfg.Coords, genFuncFactory(stat, new double[]{0.01, 0.99}));
 		
 		for (int i = 0; i < pts.length; i++) {
@@ -39,6 +39,7 @@ public class ParticleTest {
 		
 		// initialize graphics
 		StdDraw.setScale(0, 1);
+		StdDraw.show(0);
 	}
 	
 	public void simulate() {
@@ -62,22 +63,26 @@ public class ParticleTest {
 			
 			if (pa != null) predict(pa);
 			if (pb != null) predict(pb);
+			pq.insert(new CollisionEvent(time + .1, null, null));
 		}
 	}
 	
 	private void predict(Particle p) {
 		for (Particle pt : pts) {
 			double dt = p.timeToHit(pt);
-			//if (dt < Double.POSITIVE_INFINITY) {
-			pq.insert(new CollisionEvent(time + dt, p, pt));
-			//}
+			if (dt < Double.POSITIVE_INFINITY) {
+				pq.insert(new CollisionEvent(time + dt, p, pt));
+			}
 		}
 		pq.insert(new CollisionEvent(time + p.timeToHitHWall(), null, p));
 		pq.insert(new CollisionEvent(time + p.timeToHitVWall(), p, null));
 	}
 	
 	private void redraw() {
+		StdOut.printf("redraw(time=%f)\n", time);
+		StdDraw.clear();
 		for (Particle pt : pts) pt.draw();
+		StdDraw.show(20);
 	}
 	
 	private GeneratingFunction genFuncFactory(Statistics stat, double[] params) {
