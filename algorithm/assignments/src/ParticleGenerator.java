@@ -9,11 +9,13 @@
 public class ParticleGenerator {
 		
 	public enum Cfg {
+		Mass,
 		Radius,
 		Speed,
 		Coords
 	}
-		
+	
+	private GeneratingFunction gfMass;
 	private GeneratingFunction gfRadius;
 	private GeneratingFunction gfSpeed;
 	private GeneratingFunction gfCoords;
@@ -23,6 +25,9 @@ public class ParticleGenerator {
 	
 	public void setGeneratingFunction(Cfg type, GeneratingFunction gf) {
 		switch (type) {
+		case Mass:
+			gfMass = gf;
+			break;
 		case Radius:
 			gfRadius = gf;
 			break;
@@ -38,20 +43,15 @@ public class ParticleGenerator {
 	}
 	
 	public void makeParticle(Particle p) {
-		if (gfRadius == null) {
-			throw new NullPointerException("particle generating function is not set");
+		if ((gfMass == null) || (gfRadius == null) || (gfSpeed == null) || (gfCoords == null)) {
+			throw new NullPointerException("some particle generating function is not set");
 		}
+		p.setMass(gfMass.getValue());
 		p.setRadius(gfRadius.getValue());
-		if (gfSpeed == null) {
-			throw new NullPointerException("speed generating function is not set");
-		}
 		double vx = gfSpeed.getValue();
 		double vy = gfSpeed.getMax();
 		vy = Math.sqrt(vy*vy - vx*vx);
 		p.setSpeed(vx,  vy);
-		if (gfCoords == null) {
-			throw new NullPointerException("coordinate generating function is not set");
-		}
 		p.setCoords(gfCoords.getValue(), gfCoords.getValue());
 	}
 }
