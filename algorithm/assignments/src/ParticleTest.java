@@ -29,7 +29,7 @@ public class ParticleTest {
 		// initialize particles
 		pgen.setGeneratingFunction(ParticleGenerator.Cfg.Mass, genFuncFactory(stat, new double[]{0, 1}));
 		pgen.setGeneratingFunction(ParticleGenerator.Cfg.Radius, genFuncFactory(stat, new double[]{0.005, 0.01}));
-		pgen.setGeneratingFunction(ParticleGenerator.Cfg.Speed, genFuncFactory(stat, new double[]{-0.5, 0.5}));
+		pgen.setGeneratingFunction(ParticleGenerator.Cfg.Speed, genFuncFactory(stat, new double[]{-0.1, 0.1}));
 		pgen.setGeneratingFunction(ParticleGenerator.Cfg.Coords, genFuncFactory(stat, new double[]{0.01, 0.99}));
 		
 		for (int i = 0; i < pts.length; i++) {
@@ -48,22 +48,23 @@ public class ParticleTest {
 		
 		while (!pq.isEmpty()) {
 			CollisionEvent e = pq.delMin();
-			if (!e.isValid()) continue;
-			
-			// update positions of all particle because we know that there is no collisions before the event
-			for (Particle p : pts) p.move(e.time - time);
-			time = e.time;
+			StdOut.printf("Event at %f\n", e.time);
+			if (!e.isValid()) {StdOut.printf("Event is not valid\n", e.time); continue;}
 			
 			Particle pa = e.p1;
 			Particle pb = e.p2;
+			
+			// update positions of all particles because we know that there is no collisions before the event
+			for (Particle p : pts) p.move(e.time - time);
+			time = e.time;
+			
 			if ((pa != null) && (pb != null)) pa.bounceOff(pb);
-			else if ((pa == null) && (pb != null)) pb.bounceOffHWall();
-			else if ((pa != null) && (pb == null)) pa.bounceOffVWall();
+			else if ((pa == null) && (pb != null)) {pb.bounceOffHWall();StdOut.printf("Bounce off horizontal wall\n");}
+			else if ((pa != null) && (pb == null)) {pa.bounceOffVWall();StdOut.printf("Bounce off vertical wall\n");}
 			else redraw();
 			
 			if (pa != null) predict(pa);
 			if (pb != null) predict(pb);
-			pq.insert(new CollisionEvent(time + .1, null, null));
 		}
 	}
 	
@@ -83,6 +84,7 @@ public class ParticleTest {
 		StdDraw.clear();
 		for (Particle pt : pts) pt.draw();
 		StdDraw.show(20);
+		pq.insert(new CollisionEvent(time + 0.1, null, null));
 	}
 	
 	private GeneratingFunction genFuncFactory(Statistics stat, double[] params) {
@@ -102,7 +104,7 @@ public class ParticleTest {
 	}
 	
 	public static void main(String[] args) {
-		ParticleTest pt = new ParticleTest(10);
+		ParticleTest pt = new ParticleTest(50);
 		pt.init(Statistics.Random);
 		pt.simulate();
 	}

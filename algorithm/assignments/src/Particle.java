@@ -67,10 +67,10 @@ public class Particle {
 	}
 	
 	public void bounceOff(Particle p) {
-		double dvx = vX - p.vX;
-		double dvy = vY - p.vY;
-		double drx = rX - p.rX;
-		double dry = rY - p.rY;
+		double dvx = p.vX - vX;
+		double dvy = p.vY - vY;
+		double drx = p.rX - rX;
+		double dry = p.rY - rY;
 		double dvdr = dvx*drx + dvy*dry;
 		double r = radius + p.radius;
 		double J = 2*mass*p.mass*dvdr/(r*r*(mass + p.mass));
@@ -112,13 +112,13 @@ public class Particle {
 	}
 	
 	public double timeToHitVWall() {
-		if (vX > 0) return (1 - rX - radius) / vX;
+		if (vX > 0) return (1.0 - rX - radius) / vX;
 		else if (vX < 0) return (radius - rX) / vX;
 		else return Double.POSITIVE_INFINITY;
 	}
 	
 	public double timeToHitHWall() {
-		if (vY > 0) return (1 - rY - radius) / vY;
+		if (vY > 0) return (1.0 - rY - radius) / vY;
 		else if (vY < 0) return (radius - rY) / vY;
 		else return Double.POSITIVE_INFINITY;
 	}
