@@ -70,6 +70,17 @@ public class Runner {
 			}
 			h.printData();
 			break;
+		case 5:
+			BST<Character, Integer> tree = new BST<Character, Integer>();
+			int val = 0;
+			for (char k : new Character[]{'P','N','W','E','A','Z','F','I','G','U','M','O'}) tree.put(k, val++);
+			StdOut.printf("BST size: %d\n", tree.size());
+			char skey = 'M';
+			StdOut.printf("key '%c' : %d\n", skey, tree.get(skey));
+			StdOut.printf("Floor for 'H': '%d'\n", tree.floor('H'));
+			StdOut.printf("Ceiling for 'H': '%c'\n", tree.ceiling('H'));
+			StdOut.printf("Rank for 'H': '%d'\n", tree.rank('H'));
+			break;
 		default:
 			StdOut.printf("No tasks defined for week %d\n", wk);
 			rc = -1;
