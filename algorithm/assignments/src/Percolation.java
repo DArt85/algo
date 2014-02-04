@@ -12,11 +12,13 @@ public class Percolation {
 	private int gridSize;
 	private boolean[] siteStates;
 	private WeightedQuickUnionUF quickUf;
+	private WeightedQuickUnionUF ufBackw;
 
 	public Percolation(int n) {
 		gridSize = n;
 		// +2 top and bottom virtual sites
 		quickUf = new WeightedQuickUnionUF(n*n + 2);
+		ufBackw = new WeightedQuickUnionUF(n*n + 1);
 		siteStates = new boolean[n*n + 2];
 		for (int i = 1; i < (n*n + 1); i++) {
 			siteStates[i] = false;
@@ -36,6 +38,9 @@ public class Percolation {
 		for (int index : neighbours) {
 			if ((index != -1) && (siteStates[index] == true)) {
 				quickUf.union(thisSite, index);
+				if (index <= gridSize*gridSize) {
+					ufBackw.union(thisSite, index);
+				}
 			}
 		}
 	}
@@ -47,7 +52,7 @@ public class Percolation {
 
 	public boolean isFull(int i, int j) {
 		checkValid(i, j);
-		return quickUf.connected(flatIndex(i, j), 0);
+		return ufBackw.connected(flatIndex(i, j), 0);
 	}
 
 	public boolean percolates() {
