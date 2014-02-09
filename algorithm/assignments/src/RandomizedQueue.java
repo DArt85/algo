@@ -8,19 +8,18 @@ import java.util.Iterator;
  * @author ardobryn
  *
  */
-public class RandomizedQueue<T> implements Iterable<T> {
+public class RandomizedQueue<Item> implements Iterable<Item> {
 
-	private class RandomizedQueueIterator implements Iterator<T> {
+	private class RandomizedQueueIterator implements Iterator<Item> {
 
-		int current;
-		int[] order;
+		private int current;
+		private int[] order;
 		
 		RandomizedQueueIterator() {
 			current = 0;
-			order = new int[m_size];
-			for (int i = 0; i < m_size; i++) {
-				order[i] = StdRandom.uniform(m_size);
-			}
+			order = new int[size];
+			for (int i = 0; i < size; i++) order[i] = i;
+			StdRandom.shuffle(order);
 		}
 		
 		/* 
@@ -28,15 +27,16 @@ public class RandomizedQueue<T> implements Iterable<T> {
 		 */
 		@Override
 		public boolean hasNext() {
-			return (current < m_size);
+			return (current < size);
 		}
 
 		/* 
 		 * 
 		 */
 		@Override
-		public T next() {
-			return m_valArr[order[current++]];
+		public Item next() {
+			if (current == size) throw new java.util.NoSuchElementException("iterator is empty");
+			return valArr[order[current++]];
 		}
 
 		/* 
@@ -49,21 +49,13 @@ public class RandomizedQueue<T> implements Iterable<T> {
 		
 	}
 	
-	/* 
-	 * 
-	 */
-	@Override
-	public Iterator<T> iterator() {
-		return new RandomizedQueueIterator();
-	}
-	
-	private T[] m_valArr;
-	private int m_size;
+	private Item[] valArr;
+	private int size;
 	
 	@SuppressWarnings("unchecked")
 	public RandomizedQueue() {
-		m_valArr = (T[])new Object[2];
-		m_size = 0;
+		valArr = (Item[]) new Object[2];
+		size = 0;
 	}
 	
 	public boolean isEmpty() {
@@ -71,38 +63,48 @@ public class RandomizedQueue<T> implements Iterable<T> {
 	}
 	
 	public int size() {
-		return m_size;
+		return size;
 	}
 	
-	public void enqueue(T val) {
+	public void enqueue(Item val) {
 		if (val == null) throw new NullPointerException("can't have null-pointers in queue");
-		if (m_size == m_valArr.length) resize(2 * m_size);
-		m_valArr[m_size++] = val;
+		if (size == valArr.length) resize(2 * size);
+		valArr[size++] = val;
 	}
 	
-	public T dequeue() {
-		T rVal = null;
+	public Item dequeue() {
 		if (isEmpty()) throw new java.util.NoSuchElementException("queue is empty");
-		int index = StdRandom.uniform(m_size);
-		rVal = m_valArr[index];
-		m_valArr[index] = m_valArr[m_size - 1];
-		m_valArr[m_size - 1] = null;
-		m_size--;
-		if (m_size == m_valArr.length / 4) resize(m_valArr.length / 2);
+		int index = StdRandom.uniform(size);
+		Item rVal = valArr[index];
+		valArr[index] = valArr[--size];
+		valArr[size] = null;
+		if ((size > 0) && (size == valArr.length/4)) resize(valArr.length/2);
 		return rVal;
 	}
 	
-	public T sample() {
+	public Item sample() {
 		if (isEmpty()) throw new java.util.NoSuchElementException("queue is empty");
-		return m_valArr[StdRandom.uniform(m_size)];
+		return valArr[StdRandom.uniform(size)];
+	}
+	
+	@Override
+	public Iterator<Item> iterator() {
+		return new RandomizedQueueIterator();
 	}
 	
 	@SuppressWarnings("unchecked")
 	private void resize(int newSize) {
-		T[] newArr = (T[])new Object[newSize];
-		for (int i = 0; i < m_size; i++) {
-			newArr[i] = m_valArr[i];
+		assert newSize > size;
+		Item[] newArr = (Item[]) new Object[newSize];
+		for (int i = 0; i < size; i++) {
+			newArr[i] = valArr[i];
 		}
-		m_valArr = newArr;
+		valArr = newArr;
+	}
+	
+	public static void main(String[] args) {
+		RandomizedQueue<Integer> rq = new RandomizedQueue<Integer>();
+		for (int i : new int[]{0,10,20,30,40}) rq.enqueue(i);
+		for (int i : rq) StdOut.println(i);
 	}
 }

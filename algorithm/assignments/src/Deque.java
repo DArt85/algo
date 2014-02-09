@@ -7,42 +7,47 @@ import java.util.Iterator;
 
 /**
  * @author ardobryn
- * @param <T>
+ * @param <Item>
  *
  */
-public class Deque<T> implements Iterable<T> {
+public class Deque<Item> implements Iterable<Item> {
 
 	private class Node {
-		T value;
-		Node next;
+		private Item value;
+		private Node next;
+		private Node prev;
 		
-		Node(T val) {
+		Node(Item val) {
 			value = val;
 			next = null;
+			prev = null;
 		}
 	}
 	
-	private class DequeIterator implements Iterator<T> {
+	private class DequeIterator implements Iterator<Item> {
 
-		private Node m_current;
+		private Node current;
 		
 		DequeIterator() {
-			m_current = m_first;
+			current = first;
 		}
 		
 		/* 
 		 */
 		@Override
 		public boolean hasNext() {
-			return (m_current != null);
+			return (current != null);
 		}
 
 		/* 
 		 */
 		@Override
-		public T next() {
-			T rVal = m_current.value;
-			m_current = m_current.next;
+		public Item next() {
+			if (current == null) {
+				throw new java.util.NoSuchElementException("iterator is empty");
+			}
+			Item rVal = current.value;
+			current = current.next;
 			return rVal;
 		}
 
@@ -50,73 +55,59 @@ public class Deque<T> implements Iterable<T> {
 		 */
 		@Override
 		public void remove() {
-			throw new UnsupportedOperationException("removal from stack iterator is not supported");
+			throw new UnsupportedOperationException("removal from dequeue iterator is not supported");
 		}
 	}
 	
-	private Node m_first;
-	private Node m_last;
-	private int m_count;
-	
-	public Deque() {
-		m_first = null;
-		m_last = null;
-		m_count = 0;
-	}
-	
+	private Node first = null;
+	private Node last = null;
+	private int count = 0;
+
 	public boolean isEmpty() {
 		return (size() == 0);
 	}
 	
 	public int size() {
-		return m_count;
+		return count;
 	}
 	
-	public void addFirst(T val) {
+	public void addFirst(Item val) {
 		checkIfNull(val);
-		Node top = new Node(val);
-		top.next = m_first;
-		m_first = top;
-		if (m_count == 0) {
-			m_last = top;
-		}
-		m_count++;
+		Node oldfirst = first;
+		first = new Node(val);
+		first.next = oldfirst;
+		if (isEmpty()) last = first;
+		else oldfirst.prev = first;
+		count++;
 	}
 	
-	public void addLast(T val) {
+	public void addLast(Item val) {
 		checkIfNull(val);
-		Node btm = new Node(val);
-		btm.next = m_last;
-		m_last = btm;
-		if (m_count == 0) {
-			m_first = btm;
-		}
-		m_count++;
+		Node oldlast = last;
+		last = new Node(val);
+		last.prev = oldlast;
+		if (isEmpty()) first = last;
+		else oldlast.next = last;
+		count++;
 	}
 	
-	public T removeFirst() {
-		T rVal = null;
-		if (m_count > 0) {
-			rVal = m_first.value;
-			m_first = m_first.next;
-			m_count--;
-			if (m_count == 0) m_last = m_first; 
-		} else {
-			throw new java.util.NoSuchElementException("deque is empty");
-		}
+	public Item removeFirst() {
+		if (isEmpty()) throw new java.util.NoSuchElementException("deque is empty");
+		Item rVal = first.value;
+		first = first.next;
+		count--;
+		if (isEmpty()) last = null;
+		else first.prev = null;
 		return rVal;
 	}
 	
-	public T removeLast() {
-		T rVal = null;
-		if (m_count > 0) {
-			rVal = m_last.value;
-			m_last = m_last.next;
-			m_count--;
-			if (m_count == 0) m_first = m_last; 
-		} else {
-			throw new java.util.NoSuchElementException("deque is empty");
-		}
+	public Item removeLast() {
+		if (isEmpty()) throw new java.util.NoSuchElementException("deque is empty");
+		Item rVal = last.value;
+		last = last.prev;
+		count--;
+		if (isEmpty()) first = null;
+		else last.next = null;
 		return rVal;
 	}
 	
@@ -124,11 +115,24 @@ public class Deque<T> implements Iterable<T> {
 	 * 
 	 */
 	@Override
-	public Iterator<T> iterator() {
+	public Iterator<Item> iterator() {
 		return new DequeIterator();
 	}
 	
-	private void checkIfNull(T val) {
-		if (val == null) throw new NullPointerException("can't have null-pointers in deque");
+	private void checkIfNull(Item val) {
+		if (val == null) throw new NullPointerException("can'Item have null-pointers in deque");
+	}
+	
+	public static void main(String[] args) {
+		Deque<Integer> dq = new Deque<Integer>();
+		for (int i = 0; i < 50; i++) {
+			if (StdRandom.random() > 0.1) {
+				//dq.addFirst(i);
+				dq.addLast(i);
+			} else {
+				//StdOut.println(dq.removeLast());
+				StdOut.println(dq.removeFirst());
+			}
+		}
 	}
 }
