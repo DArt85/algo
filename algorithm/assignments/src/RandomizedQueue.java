@@ -1,12 +1,7 @@
 import java.util.Iterator;
 
 /**
- * 
- */
-
-/**
  * @author ardobryn
- *
  */
 public class RandomizedQueue<Item> implements Iterable<Item> {
 
@@ -22,26 +17,17 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 			StdRandom.shuffle(order);
 		}
 		
-		/* 
-		 * 
-		 */
 		@Override
 		public boolean hasNext() {
 			return (current < size);
 		}
 
-		/* 
-		 * 
-		 */
 		@Override
 		public Item next() {
 			if (current == size) throw new java.util.NoSuchElementException("iterator is empty");
 			return valArr[order[current++]];
 		}
 
-		/* 
-		 * 
-		 */
 		@Override
 		public void remove() {
 			throw new UnsupportedOperationException("removal from queue iterator is not supported");
