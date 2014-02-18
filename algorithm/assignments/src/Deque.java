@@ -26,33 +26,21 @@ public class Deque<Item> implements Iterable<Item> {
 	
 	private class DequeIterator implements Iterator<Item> {
 
-		private Node current;
+		private Node current = first;
 		
-		DequeIterator() {
-			current = first;
-		}
-		
-		/* 
-		 */
 		@Override
 		public boolean hasNext() {
 			return (current != null);
 		}
 
-		/* 
-		 */
 		@Override
 		public Item next() {
-			if (current == null) {
-				throw new java.util.NoSuchElementException("iterator is empty");
-			}
+			if (current == null) throw new java.util.NoSuchElementException("iterator is empty");
 			Item rVal = current.value;
 			current = current.next;
 			return rVal;
 		}
 
-		/* 
-		 */
 		@Override
 		public void remove() {
 			throw new UnsupportedOperationException("removal from dequeue iterator is not supported");
@@ -110,10 +98,7 @@ public class Deque<Item> implements Iterable<Item> {
 		else last.next = null;
 		return rVal;
 	}
-	
-	/* 
-	 * 
-	 */
+
 	@Override
 	public Iterator<Item> iterator() {
 		return new DequeIterator();
