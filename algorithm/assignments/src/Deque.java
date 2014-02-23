@@ -105,7 +105,7 @@ public class Deque<Item> implements Iterable<Item> {
 	}
 	
 	private void checkIfNull(Item val) {
-		if (val == null) throw new NullPointerException("can'Item have null-pointers in deque");
+		if (val == null) throw new NullPointerException("can't have null-pointers in deque");
 	}
 	
 	public static void main(String[] args) {
