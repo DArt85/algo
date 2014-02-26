@@ -35,49 +35,75 @@ public class Solver {
 		}
     };
 	
-	private Node 		n;
-	private boolean		solv;
+	private Node 		 n;
+	private boolean		 solv;
+	private Stack<Board> sol;
+	private boolean		 checked;
 	
 	public Solver(Board initial) {
 		solv = false;
 		n = new Node(initial, null, 0);
+		sol = new Stack<Board>();
+		checked = false;
+	}
+	
+	private boolean step(MinPQ<Node> pq) {
+		if (pq.isEmpty()) return false;
+		Node cur = pq.delMin();
+		if (cur.bd.isGoal()) {
+			n = cur;
+			return true;
+		}
+		for (Board b : cur.bd.neighbors())
+			if ((cur.prev == null) || !b.equals(cur.prev.bd)) pq.insert(new Node(b, cur, ++cur.moves));
+		return false;
 	}
 	
 	public boolean isSolvable() {
-		MinPQ<Node> squeue = new MinPQ<Node>(PRI_ORDER);;
+		boolean swapSolv = false;
+		MinPQ<Node> swapSqueue = new MinPQ<Node>(PRI_ORDER);
+		swapSqueue.insert(new Node(n.bd.twin(), null, 0));
+		
+		MinPQ<Node> squeue = new MinPQ<Node>(PRI_ORDER);
 		squeue.insert(n);
-		while (!squeue.isEmpty()) {
-			n = squeue.delMin();
-			if (n.bd.isGoal()) {
-				solv = true;
-				break;
-			}
-			for (Board b : n.bd.neighbours())
-				if ((n.prev == null) || !b.equals(n.prev.bd)) squeue.insert(new Node(b, n, n.moves++));
+		
+		while (!solv && !swapSolv) {
+			solv = step(squeue);
+			swapSolv = step(swapSqueue);
 		}
+		
+		checked = true;
 		return solv;
 	}
 	
 	public int moves() {
-		return (solv) ? n.moves : -1;
+		if (!checked) isSolvable();
+		if (solv) {
+			if (sol.isEmpty()) solution();
+			return sol.size() - 1;
+		} else {
+			return -1;
+		}
 	}
 	
 	public Iterable<Board> solution() {
+		if (!checked) isSolvable();
 		if (!solv) return null;
-		Node it = n;
-		Stack<Board> sol = new Stack<Board>();
-		while (it != null) {
-			sol.push(it.bd);
-			it = it.prev;
+		if (sol.isEmpty()) {
+			Node it = n;
+			while (it != null) {
+				sol.push(it.bd);
+				it = it.prev;
+			}
 		}
 		return sol;
 	}
 	
-	public static Board readBoardFromFile(String file) {
+	private static Board readBoardFromFile(String file) {
 		// create initial board from file
 	    In in = new In(file);
 	    int N = in.readInt();
-	    byte[][] blocks = new byte[N][N];
+	    int[][] blocks = new int[N][N];
 	    for (int i = 0; i < N; i++)
 	        for (int j = 0; j < N; j++)
 	            blocks[i][j] = in.readByte();

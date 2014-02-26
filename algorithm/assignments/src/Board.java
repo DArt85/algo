@@ -6,21 +6,21 @@ public class Board {
 	
 	private int    dim;
 	private int    dist;
-	private byte[] board;
+	private int[] board;
 	
-	public Board(byte[][] blocks) {
+	public Board(int[][] blocks) {
 		dim = blocks.length;
 		dist = -1;
-		board = new byte[dim * dim];
+		board = new int[dim * dim];
 		int index = 0;
-		for (byte[] row : blocks)
-			for (byte el : row) board[index++] = el;
+		for (int[] row : blocks)
+			for (int el : row) board[index++] = el;
 	}
 	
 	private Board(Board bd) {
 		dim = bd.dim;
 		dist = bd.dist;
-		board = new byte[bd.board.length];
+		board = new int[bd.board.length];
 		for (int i = 0; i < board.length; i++) board[i] = bd.board[i];
 	}
 	
@@ -40,10 +40,8 @@ public class Board {
 			dist = 0;
 			for (int i = 0; i < board.length; i++) {
 				if ((board[i] != 0) && (board[i] != (i + 1))) {
-					int distLin = Math.abs(i + 1 - board[i]);
-					int distV = distLin / dim;
-					int distH = distLin - dim * distV;
-					dist += distV + distH;
+					int cRow = i/dim, cCol = i%dim, tRow = (board[i]-1)/dim, tCol = (board[i]-1)%dim;
+					dist += Math.abs(cRow-tRow) + Math.abs(cCol-tCol);
 				}
 			}
 		}
@@ -56,25 +54,9 @@ public class Board {
 	
 	public Board twin() {
 		Board copy = new Board(this);
-		boolean swaped = false;
-		while (!swaped) {
-			int row = StdRandom.uniform(0, dim);
-			int colPair[] = new int[]{-1,-1};
-			for (int col = 0, i = 0; (col < dim) && (i < 2); ) {
-				int index = row*dim + col;
-				if (board[index] != 0) {
-					col += (i == 0) ? dim/2 : 1;
-					colPair[i++] = index;
-				} else {
-					col++;
-				}
-			}
-			if ((colPair[0] >= 0) && (colPair[1] >= 0) && (colPair[0] != colPair[1])) {
-				copy.board[colPair[0]] = board[colPair[1]];
-				copy.board[colPair[1]] = board[colPair[0]];
-				swaped = true;
-			}
-		}
+		int row = 0;
+		if ((board[0] == 0) || (board[1] == 0)) row = 1;
+		copy.swap(row*dim, row*dim + 1);
 		return copy;
 	}
 	
@@ -86,50 +68,59 @@ public class Board {
 			rs = true;
 		} else {
 			Board cmp = (Board) y;
+			if (cmp.dim != dim) return false;
 			for (int i = 0; i < board.length; i++)
-				if (board[i] != cmp.board[i]) rs = false;
+				if (board[i] != cmp.board[i]) {
+					rs = false;
+					break;
+				}
 		}
 		return rs;
 	}
 	
 	private void swap(int i, int j) {
-		byte tmp = board[i];
+		int tmp = board[i];
 		board[i] = board[j];
 		board[j] = tmp;
 	}
 	
-	public Iterable<Board> neighbours() {
+	private Board getSwapedCopy(int i, int j) {
+		Board b = new Board(this);
+		b.swap(i, j);
+		return b;
+	}
+	
+	public Iterable<Board> neighbors() {
 		Queue<Board> rq = new Queue<Board>();
 		int pos = 0;
 		for (; (pos < board.length) && (board[pos] != 0); pos++);
-		for (int ind : new int[]{pos-dim,pos+1,pos+dim,pos-1}) {
-			int row = ind/dim, col = ind%dim;
-			if ((ind >= 0) && (ind < board.length) && (row >= 0) && (row < dim) && (col >= 0) && (col < dim)) {
-				Board b = new Board(this);
-				b.swap(pos, ind);
-				rq.enqueue(b);
-			}
-		}
+		int row = pos/dim, col = pos%dim;
+		if (row > 0)     rq.enqueue(getSwapedCopy(pos, (row-1)*dim + col));
+		if (row < dim-1) rq.enqueue(getSwapedCopy(pos, (row+1)*dim + col));
+		if (col > 0)     rq.enqueue(getSwapedCopy(pos, pos-1));
+		if (col < dim-1) rq.enqueue(getSwapedCopy(pos, pos+1));
 		return rq;
 	}
 	
 	public String toString() {
 		StringBuilder sb = new StringBuilder(2*dim*dim);
+		sb.append(dim+"\n");
 		for (int i = 0; i < board.length; i++) {
-			sb.append(board[i]);
+			sb.append(String.format("%2d", board[i]));
 			sb.append((i % dim == dim - 1) ? "\n" : " ");
 		}
 		return sb.toString();
 	}
 	
 	public static void main(String args[]) {
-		Board initial = Solver.readBoardFromFile(args[0]);
+		//Board initial = Solver.readBoardFromFile(args[0]);
+		Board initial = new Board(new int[][]{{5,8,7},{1,4,6},{3,0,2}});
 	    StdOut.printf("Dimension: %d\n", initial.dimension());
 	    StdOut.print(initial.toString());
 	    StdOut.printf("Hamming: %d\n", initial.hamming());
 	    StdOut.printf("Manhattan: %d\n", initial.manhattan());
 	    StdOut.printf("Twin:\n%s", initial.twin());
 	    StdOut.printf("\nNeighbours:\n\n");
-	    for (Board b : initial.neighbours()) StdOut.println(b);
+	    for (Board b : initial.neighbors()) StdOut.println(b);
 	}
 }
