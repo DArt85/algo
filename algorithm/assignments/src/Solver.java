@@ -12,10 +12,10 @@ public class Solver {
 		private Board bd;
 		private Node  prev;
 		
-		public Node(Board b, Node p, int mov) {
+		public Node(Board b, Node p) {
 			bd = b;
 			prev = p;
-			moves = mov;
+			moves = (p == null) ? 0 : p.moves + 1;
 		}
 		
 		public int priority() {
@@ -25,13 +25,7 @@ public class Solver {
 	
 	private final Comparator<Node> PRI_ORDER = new Comparator<Node>() {
     	public int compare(Node n1, Node n2) {
-    		int rc;
-    		int pri1 = n1.priority();
-    		int pri2 = n2.priority();
-    		if (pri1 < pri2) rc = -1;
-    		else if (pri1 > pri2) rc = 1;
-    		else rc = 0;
-			return rc;
+			return (n1.priority() - n2.priority());
 		}
     };
 	
@@ -42,7 +36,7 @@ public class Solver {
 	
 	public Solver(Board initial) {
 		solv = false;
-		n = new Node(initial, null, 0);
+		n = new Node(initial, null);
 		sol = new Stack<Board>();
 		checked = false;
 	}
@@ -55,14 +49,14 @@ public class Solver {
 			return true;
 		}
 		for (Board b : cur.bd.neighbors())
-			if ((cur.prev == null) || !b.equals(cur.prev.bd)) pq.insert(new Node(b, cur, ++cur.moves));
+			if ((cur.prev == null) || !b.equals(cur.prev.bd)) pq.insert(new Node(b, cur));
 		return false;
 	}
 	
 	public boolean isSolvable() {
 		boolean swapSolv = false;
 		MinPQ<Node> swapSqueue = new MinPQ<Node>(PRI_ORDER);
-		swapSqueue.insert(new Node(n.bd.twin(), null, 0));
+		swapSqueue.insert(new Node(n.bd.twin(), null));
 		
 		MinPQ<Node> squeue = new MinPQ<Node>(PRI_ORDER);
 		squeue.insert(n);
@@ -79,8 +73,7 @@ public class Solver {
 	public int moves() {
 		if (!checked) isSolvable();
 		if (solv) {
-			if (sol.isEmpty()) solution();
-			return sol.size() - 1;
+			return n.moves;
 		} else {
 			return -1;
 		}

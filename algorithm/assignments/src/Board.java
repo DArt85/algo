@@ -19,7 +19,7 @@ public class Board {
 	
 	private Board(Board bd) {
 		dim = bd.dim;
-		dist = bd.dist;
+		dist = -1;
 		board = new int[bd.board.length];
 		for (int i = 0; i < board.length; i++) board[i] = bd.board[i];
 	}
@@ -31,8 +31,8 @@ public class Board {
 	public int hamming() {
 		int rs = 0;
 		for (int i = 0; i < board.length; i++)
-			if ((board[i] != 0) && (board[i] != (i + 1))) rs++;
-		return rs;
+			if (board[i] != (i + 1)) rs++;
+		return (rs - 1);
 	}
 	
 	public int manhattan() {
@@ -49,7 +49,10 @@ public class Board {
 	}
 	
 	public boolean isGoal() {
-		return (hamming() == 0);
+		if (board[board.length-1] != 0) return false;
+        for (int i = 0; i < board.length-1; i++)
+        	if (board[i] != (i+1)) return false;
+        return true;
 	}
 	
 	public Board twin() {
