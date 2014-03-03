@@ -65,7 +65,7 @@ public class Solver {
 			solv = step(squeue);
 			swapSolv = step(swapSqueue);
 		}
-		
+
 		checked = true;
 		return solv;
 	}
@@ -92,7 +92,7 @@ public class Solver {
 		return sol;
 	}
 	
-	private static Board readBoardFromFile(String file) {
+	public static Board readBoardFromFile(String file) {
 		// create initial board from file
 	    In in = new In(file);
 	    int N = in.readInt();

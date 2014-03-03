@@ -5,23 +5,25 @@
 public class Board {
 	
 	private int    dim;
-	private int    dist;
-	private int[] board;
+	private int    distM;
+	private int    distH;
+	private byte[] board;
 	
 	public Board(int[][] blocks) {
 		dim = blocks.length;
-		dist = -1;
-		board = new int[dim * dim];
+		distM = -1;
+		distH = -1;
+		board = new byte[dim * dim];
 		int index = 0;
 		for (int[] row : blocks)
-			for (int el : row) board[index++] = el;
+			for (int el : row) board[index++] = (byte) el;
 	}
 	
 	private Board(Board bd) {
 		dim = bd.dim;
-		dist = -1;
-		board = new int[bd.board.length];
-		for (int i = 0; i < board.length; i++) board[i] = bd.board[i];
+		distM = bd.manhattan();
+		distH = -1;
+		board = bd.board.clone();
 	}
 	
 	public int dimension() {
@@ -29,23 +31,20 @@ public class Board {
 	}
 	
 	public int hamming() {
-		int rs = 0;
+		if (distH >= 0) return distH;
+		distH = 0;
 		for (int i = 0; i < board.length; i++)
-			if (board[i] != (i + 1)) rs++;
-		return (rs - 1);
+			if (board[i] != (i + 1)) distH++;
+		return --distH; // because we shouldn't count blank element
 	}
 	
 	public int manhattan() {
-		if (dist < 0) {
-			dist = 0;
-			for (int i = 0; i < board.length; i++) {
-				if ((board[i] != 0) && (board[i] != (i + 1))) {
-					int cRow = i/dim, cCol = i%dim, tRow = (board[i]-1)/dim, tCol = (board[i]-1)%dim;
-					dist += Math.abs(cRow-tRow) + Math.abs(cCol-tCol);
-				}
-			}
+		if (distM >= 0) return distM;
+		distM = 0;
+		for (int i = 0; i < board.length; i++) {
+			if ((board[i] != 0) && (board[i] != (i + 1))) distM += getOffset(i);
 		}
-		return dist;
+		return distM;
 	}
 	
 	public boolean isGoal() {
@@ -82,14 +81,21 @@ public class Board {
 	}
 	
 	private void swap(int i, int j) {
-		int tmp = board[i];
+		byte tmp = board[i];
 		board[i] = board[j];
 		board[j] = tmp;
 	}
 	
+	private int getOffset(int i) {
+		int cRow = i/dim, cCol = i%dim, tRow = (board[i]-1)/dim, tCol = (board[i]-1)%dim;
+		return (Math.abs(cRow-tRow) + Math.abs(cCol-tCol));
+	}
+	
 	private Board getSwapedCopy(int i, int j) {
 		Board b = new Board(this);
+		b.distM -= getOffset(j);
 		b.swap(i, j);
+		b.distM += b.getOffset(i);
 		return b;
 	}
 	
@@ -98,10 +104,10 @@ public class Board {
 		int pos = 0;
 		for (; (pos < board.length) && (board[pos] != 0); pos++);
 		int row = pos/dim, col = pos%dim;
-		if (row > 0)     rq.enqueue(getSwapedCopy(pos, (row-1)*dim + col));
-		if (row < dim-1) rq.enqueue(getSwapedCopy(pos, (row+1)*dim + col));
 		if (col > 0)     rq.enqueue(getSwapedCopy(pos, pos-1));
 		if (col < dim-1) rq.enqueue(getSwapedCopy(pos, pos+1));
+		if (row > 0)     rq.enqueue(getSwapedCopy(pos, (row-1)*dim + col));
+		if (row < dim-1) rq.enqueue(getSwapedCopy(pos, (row+1)*dim + col));
 		return rq;
 	}
 	
@@ -124,6 +130,9 @@ public class Board {
 	    StdOut.printf("Manhattan: %d\n", initial.manhattan());
 	    StdOut.printf("Twin:\n%s", initial.twin());
 	    StdOut.printf("\nNeighbours:\n\n");
-	    for (Board b : initial.neighbors()) StdOut.println(b);
+	    for (Board b : initial.neighbors()) {
+	    	StdOut.println(b);
+	    	StdOut.printf("Distance %d\n\n", b.manhattan());
+	    }
 	}
 }
